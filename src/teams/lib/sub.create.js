@@ -5,8 +5,7 @@ import { getAppOnlyToken } from "../../utils/getAppToken.js";
 
 export default async (accessToken, userId) => {
   try {
-    // const webhookUrl = process.env.WEBHOOK_PUBLIC_URL;
-    const webhookUrl = "https://vtnxs-106-76-181-246.a.free.pinggy.link";
+    const webhookUrl = process.env.WEBHOOK_PUBLIC_URL;
     if (!webhookUrl) {
       throw new Error("WEBHOOK_PUBLIC_URL environment variable is not set");
     }
