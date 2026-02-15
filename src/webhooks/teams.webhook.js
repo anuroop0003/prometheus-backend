@@ -1,9 +1,9 @@
 // src/webhooks/teams.webhook.js
 import axios from "axios";
-import User from "../../database/model/user.js";
-import { ensureValidToken } from "../utils/refreshToken.js";
 import Message from "../../database/model/message.js";
 import Subscription from "../../database/model/subscription.js";
+import User from "../../database/model/user.js";
+import { ensureValidToken } from "../utils/refreshToken.js";
 
 export default async (req, res) => {
   try {
@@ -26,8 +26,8 @@ export default async (req, res) => {
     // 3. Process each notification
     for (const notification of notifications) {
       // Validate clientState for security
-      if (notification.clientState !== "secureChatsValue") {
-        console.warn("⚠️ Invalid clientState, skipping notification");
+      if (!notification.clientState || !notification.clientState.startsWith("secureChatsValue")) {
+        console.warn("⚠️ Invalid or missing clientState, skipping notification");
         continue;
       }
 

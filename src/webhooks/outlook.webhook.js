@@ -1,9 +1,9 @@
 // src/webhooks/outlook.webhook.js
 import axios from "axios";
-import User from "../../database/model/user.js";
-import Subscription from "../../database/model/subscription.js";
-import { ensureValidToken } from "../utils/refreshToken.js";
 import Message from "../../database/model/message.js";
+import Subscription from "../../database/model/subscription.js";
+import User from "../../database/model/user.js";
+import { ensureValidToken } from "../utils/refreshToken.js";
 
 export default async (req, res) => {
   try {
@@ -23,8 +23,8 @@ export default async (req, res) => {
     console.log(`📧 Received ${notifications.length} Outlook notification(s)`);
 
     for (const notification of notifications) {
-      if (notification.clientState !== "secureOutlookValue") {
-        console.warn("⚠️ Invalid clientState");
+      if (!notification.clientState || !notification.clientState.startsWith("secureOutlookValue")) {
+        console.warn("⚠️ Invalid or missing clientState");
         continue;
       }
 
