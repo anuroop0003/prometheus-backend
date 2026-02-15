@@ -32,6 +32,7 @@ export default async (accessToken, userId) => {
     // 1. Teams Chats
     try {
       const chatExpiration = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      console.log(`🔗 Using Webhook URL: ${webhookUrl}/webhook/teams`);
 
       const chatsSub = await axios.post(
         "https://graph.microsoft.com/v1.0/subscriptions",
@@ -106,6 +107,16 @@ export default async (accessToken, userId) => {
     // 3. Teams Channels (Individual per Team)
     try {
       console.log(`📡 Fetching joined teams for user (using user-delegated token)...`);
+
+      // Decode JWT simply to log scopes (MVP)
+      try {
+        const payload = accessToken.split('.')[1];
+        const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
+        console.log("🔑 User Token Scopes:", decoded.scp || decoded.roles);
+      } catch (e) {
+        console.log("Could not decode token scopes");
+      }
+
       const teamsResponse = await axios.get(
         "https://graph.microsoft.com/v1.0/me/joinedTeams",
         {
