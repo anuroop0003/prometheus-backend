@@ -1,6 +1,5 @@
 // src/cron/renew.subscriptions.js
 import axios from "axios";
-import cron from "node-cron";
 import Subscription from "../../database/model/subscription.js";
 import { getAppOnlyToken } from "../utils/getAppToken.js";
 
@@ -81,9 +80,14 @@ export const executeRenewal = async () => {
     }
 };
 
-export const initCron = () => {
-    cron.schedule("*/30 * * * *", executeRenewal);
-    console.log("Subscription renewal cron job scheduled.");
+export const initCron = async () => {
+    try {
+        const cron = (await import("node-cron")).default;
+        cron.schedule("*/30 * * * *", executeRenewal);
+        console.log("Subscription renewal cron job scheduled.");
+    } catch (error) {
+        console.error("Failed to initialize cron:", error.message);
+    }
 };
 
 export default { executeRenewal, initCron };
