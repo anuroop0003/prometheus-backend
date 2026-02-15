@@ -10,7 +10,7 @@ export default async (req, res) => {
     // Validation
     if (req.query && req.query.validationToken) {
       console.log("✅ Outlook webhook validation received:", req.query.validationToken);
-      res.set("Content-Type", "text/plain");
+      res.type('text/plain');
       return res.status(200).send(req.query.validationToken);
     }
 

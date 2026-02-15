@@ -172,7 +172,12 @@ export default async (accessToken, userId) => {
         }
       }
     } catch (error) {
-      console.error("❌ Failed to process joined teams:", error.response?.data || error.message);
+      // Handle known 401 Unauthorized for Guests who cannot enumerate teams
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.warn("⚠️ User cannot list joined teams (likely Guest or missing admin consent). Skipping channel subscriptions.");
+      } else {
+        console.error("❌ Failed to process joined teams:", error.response?.data || error.message);
+      }
     }
 
     return {
