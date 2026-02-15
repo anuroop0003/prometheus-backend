@@ -13,6 +13,15 @@ const server = express();
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 
+// Global Logging Middleware
+server.use((req, res, next) => {
+  console.log(`📡 Incoming Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Handle text/plain for Microsoft validation
+server.use(express.text());
+
 server.get("/", (req, res) => {
   res.send("Prometheus Health Is Ok");
 });
