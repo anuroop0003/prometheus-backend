@@ -1,11 +1,11 @@
 // src/cron/renew.subscriptions.js
-import cron from "node-cron";
 import axios from "axios";
+import cron from "node-cron";
 import Subscription from "../../database/model/subscription.js";
 import { getAppOnlyToken } from "../utils/getAppToken.js";
 
 // Run every 30 minutes
-cron.schedule("*/30 * * * *", async () => {
+export const executeRenewal = async () => {
     console.log("🔄 Checking subscriptions for renewal...");
 
     try {
@@ -19,13 +19,14 @@ cron.schedule("*/30 * * * *", async () => {
         });
 
         if (expiringSubscriptions.length === 0) {
-            return;
+            return { success: true, message: "No subscriptions to renew" };
         }
 
         console.log(`Found ${expiringSubscriptions.length} subscription(s) to renew`);
 
         // Get app-only token for renewal
         const appToken = await getAppOnlyToken();
+        const results = [];
 
         for (const sub of expiringSubscriptions) {
             try {
@@ -60,18 +61,29 @@ cron.schedule("*/30 * * * *", async () => {
                 await sub.save();
 
                 console.log(`✅ Renewed subscription: ${sub.subscriptionId}`);
+                results.push({ id: sub.subscriptionId, status: "renewed" });
             } catch (error) {
                 console.error(`❌ Failed to renew ${sub.subscriptionId}:`, error.response?.data || error.message);
 
                 if (error.response?.status === 404) {
                     await sub.deleteOne();
                     console.log(`🗑️ Deleted invalid local subscription: ${sub.subscriptionId}`);
+                    results.push({ id: sub.subscriptionId, status: "deleted" });
+                } else {
+                    results.push({ id: sub.subscriptionId, status: "failed", error: error.message });
                 }
             }
         }
+        return { success: true, processed: results.length, results };
     } catch (error) {
         console.error("❌ Subscription renewal error:", error);
+        throw error;
     }
-});
+};
 
-export default cron;
+export const initCron = () => {
+    cron.schedule("*/30 * * * *", executeRenewal);
+    console.log("Subscription renewal cron job scheduled.");
+};
+
+export default { executeRenewal, initCron };
