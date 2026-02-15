@@ -19,7 +19,24 @@ server.use((req, res, next) => {
   next();
 });
 
-// Handle text/plain for Microsoft validation
+// CRITICAL: Handle Microsoft Validation Requests BEFORE body parsers
+// Microsoft sends validationToken in query param. We must respond with it as plain text.
+server.use((req, res, next) => {
+  if (req.method === 'POST') {
+    // Manually parse query because express.query parser might not run yet or we want raw
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const validationToken = url.searchParams.get('validationToken');
+    if (validationToken) {
+      console.log("✅ Intercepted custom validation token:", validationToken);
+      res.setHeader('Content-Type', 'text/plain');
+      res.status(200).send(validationToken);
+      return;
+    }
+  }
+  next();
+});
+
+// Handle text/plain for other Microsoft requests (optional now since we bypass validation)
 server.use(express.text());
 
 server.get("/", (req, res) => {
