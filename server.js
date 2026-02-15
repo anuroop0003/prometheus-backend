@@ -27,9 +27,9 @@ server.use((req, res, next) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const validationToken = url.searchParams.get('validationToken');
     if (validationToken) {
-      console.log("✅ Intercepted custom validation token:", validationToken);
-      res.setHeader('Content-Type', 'text/plain');
-      res.status(200).send(validationToken);
+      console.log(`✅ Intercepted custom validation token (len=${validationToken.length}):`, validationToken);
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.status(200).end(validationToken);
       return;
     }
   }
