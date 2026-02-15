@@ -5,15 +5,23 @@ import Subscription from "../../database/model/subscription.js";
 import User from "../../database/model/user.js";
 import { ensureValidToken } from "../utils/refreshToken.js";
 
-export default async (req, res) => {
-  try {
-    // 1. Handle validation request from Microsoft
-    if (req.query && req.query.validationToken) {
-      console.log("✅ Teams webhook validation received:", req.query.validationToken);
-      res.type('text/plain');
-      return res.status(200).send(req.query.validationToken);
-    }
+// Standard Microsoft validation is POST, but we enable GET for debugging/legacy
+const handleValidation = (req, res, next) => {
+  if (req.query && req.query.validationToken) {
+    console.log("✅ Teams webhook validation received:", req.query.validationToken);
+    res.type('text/plain');
+    return res.status(200).send(req.query.validationToken);
+  }
+  next();
+};
 
+export default async (req, res) => {
+  // Check validation first
+  if (req.query && req.query.validationToken) {
+    return handleValidation(req, res);
+  }
+
+  try {
     // 2. Process change notifications
     const notifications = req.body.value;
 
