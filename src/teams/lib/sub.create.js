@@ -5,10 +5,12 @@ import { getAppOnlyToken } from "../../utils/getAppToken.js";
 
 export default async (accessToken, userId) => {
   try {
-    const webhookUrl = process.env.WEBHOOK_PUBLIC_URL;
+    let webhookUrl = process.env.WEBHOOK_PUBLIC_URL;
     if (!webhookUrl) {
       throw new Error("WEBHOOK_PUBLIC_URL environment variable is not set");
     }
+    // Remove trailing slash if present to prevent 308 redirects which fail validation
+    webhookUrl = webhookUrl.replace(/\/$/, "");
 
     const subscriptions = [];
 
@@ -61,7 +63,7 @@ export default async (accessToken, userId) => {
       subscriptions.push({ type: "teams-chat", data: chatsSub.data });
       console.log("✅ Teams chat subscription created");
     } catch (error) {
-      console.error("❌ Teams chat subscription failed:", error.response?.data || error.message);
+      console.error("❌ Teams chat subscription failed detail:", JSON.stringify(error.response?.data || error.message, null, 2));
     }
 
     // 2. Outlook Emails
@@ -98,11 +100,12 @@ export default async (accessToken, userId) => {
       subscriptions.push({ type: "outlook", data: outlookSub.data });
       console.log("✅ Outlook subscription created");
     } catch (error) {
-      console.error("❌ Outlook subscription failed:", error.response?.data || error.message);
+      console.error("❌ Outlook subscription failed detail:", JSON.stringify(error.response?.data || error.message, null, 2));
     }
 
     // 3. Teams Channels (Individual per Team)
     try {
+      console.log(`📡 Fetching joined teams for user (using user-delegated token)...`);
       const teamsResponse = await axios.get(
         "https://graph.microsoft.com/v1.0/me/joinedTeams",
         {
