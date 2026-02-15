@@ -46,7 +46,8 @@ export default async (req, res) => {
         });
 
         const { id, displayName, mail, userPrincipalName } = profileResponse.data;
-        const email = mail
+        // Use mail if available, otherwise fall back to userPrincipalName (for guests/unlicensed users)
+        const email = mail || userPrincipalName;
 
         // Update or create user
         let user = await User.findOne({ azureId: id });
