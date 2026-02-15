@@ -31,8 +31,9 @@ export default async (accessToken, userId) => {
 
     // 1. Teams Chats
     try {
-      const chatExpiration = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-      console.log(`🔗 Using Webhook URL: ${webhookUrl}/webhook/teams`);
+      // Expiration must be < 1 hour. Use 55 minutes to be safe from clock skew/network latency.
+      const chatExpiration = new Date(Date.now() + 55 * 60 * 1000).toISOString();
+      console.log(`🔗 Using Webhook URL for Teams: "${webhookUrl}/webhook/teams"`);
 
       const chatsSub = await axios.post(
         "https://graph.microsoft.com/v1.0/subscriptions",
@@ -128,7 +129,7 @@ export default async (accessToken, userId) => {
 
       for (const team of teamsResponse.data.value) {
         try {
-          const teamsExpiration = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+          const teamsExpiration = new Date(Date.now() + 55 * 60 * 1000).toISOString();
 
           const teamSub = await axios.post(
             "https://graph.microsoft.com/v1.0/subscriptions",
